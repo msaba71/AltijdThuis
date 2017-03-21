@@ -1,0 +1,61 @@
+{
+  "project_info": {
+    "project_number": "942213108953",
+    "project_id": "default-demo-app-b4773"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:942213108953:android:f36173e948059ccb",
+        "android_client_info": {
+          "package_name": "gcm.play.android.samples.com.gcmquickstart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiCAXXoqSF-9Nh3sAqGeULEU1yqSE5nRQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:942213108953:android:dd15b03660c7bc10",
+        "android_client_info": {
+          "package_name": "com.marilone.altijdthuis"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiCAXXoqSF-9Nh3sAqGeULEU1yqSE5nRQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

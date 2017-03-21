@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">AltijdThuis</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Instellingen</string>
+    <string name="action_over">Over</string>
+
+    <string name="contentopenaltijdthuis">contentOpenAltijdThuis</string>
+    <string name="title_activity_my_preferences">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">Pakket verificatie</string>
+
+    <string name="pref_title_postcode">Postcode</string>
+    <string name="pref_default_postcode">1000AA</string>
+
+    <string name="pref_title_huisnummer">Huisnummer</string>
+    <string name="pref_default_huisnummer">1</string>
+
+    <string name="pref_title_email">Email</string>
+
+    <!-- Example settings for Data & Sync -->
+
+    <!-- Example settings for Notifications -->
+
+    <string name="pref_ringtone_silent">Silent</string>
+
+</resources>
