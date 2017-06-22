@@ -1,31 +1,16 @@
-/**
- * Copyright 2015 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.marilone.altijdthuis;
 
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.nsd.NsdServiceInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
-import com.android.volley.toolbox.JsonObjectRequest;
+import com.google.android.gms.common.api.BooleanResult;
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
@@ -33,14 +18,15 @@ import com.google.android.gms.iid.InstanceID;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class RegistrationIntentService extends IntentService {
 
@@ -67,6 +53,7 @@ public class RegistrationIntentService extends IntentService {
             {
                 Port = String.valueOf(bundle.getInt("Port"));
             }
+
             // [START register_for_gcm]
             // Initially this call goes out to the network to retrieve the token, subsequent calls
             // are local.
@@ -114,44 +101,89 @@ public class RegistrationIntentService extends IntentService {
         JSONObject oRegistration = new JSONObject();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        String altijdthuisid = sharedPreferences.getString("altijdthuisid",null);
         String postcode = sharedPreferences.getString("postcode",null);
         String huisnummer = sharedPreferences.getString("huisnummer",null);
         String emailadres = sharedPreferences.getString("emailadres",null);
+
+        Boolean Firsttime=false;
+
+        // Naar apigility!
         try {
-            oRegistration.put("RegistrationID", token);
+            if ( altijdthuisid == null ) {
+                Firsttime = true;
+                String url = "http:/" + Address + ":" + String.valueOf(Port) + "/altijdthuis/GetAltijdThuisID.php";
+                altijdthuisid = GetAltijdThuisID(url);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("altijdthuisid", altijdthuisid);
+                editor.apply();
+            }
+            oRegistration.put("TelefoonID", token);
+            oRegistration.put("AltijdthuisID", altijdthuisid);
             oRegistration.put("Postcode", postcode);
             oRegistration.put("Huisnummer", huisnummer);
             oRegistration.put("Email", emailadres);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        String a = oRegistration.toString();
-        // Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
+        String urlpath ="http://192.168.1.5:8889"+"/registratie";
+        if (!Firsttime  ) urlpath += "/" + altijdthuisid;
 
-        String url ="http://"+Address+":"+Port+"/altijdthuis/StoreRegistration.php";
-        Log.d("Registreer:", "url: "+url);
+        Log.d("Registreer api:", "url: "+urlpath);
 
         // prepare the Request
-        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.POST, url, oRegistration,
-                new Response.Listener<JSONObject>()
-                {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        // display response
-                        Log.d("Response", response.toString());
-                    }
-                },  new Response.ErrorListener()
-                {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.toString());
-                    }
-                }
-        );
+        HttpURLConnection connection = null;
+        try {
+            URL url=new URL(urlpath);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
 
-// Add the request to the RequestQueue.
-        queue.add(getRequest);
+            // Bestaande registraties overschrijven.
+            if ( !Firsttime )
+            {
+                connection.setRequestMethod("PUT");
+            }
+            else
+            {
+                connection.setRequestMethod("POST");
+            }
+            OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
+            streamWriter.write(oRegistration.toString());
+            streamWriter.flush();
+            StringBuilder stringBuilder = new StringBuilder();
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_CREATED){
+                InputStreamReader streamReader = new InputStreamReader(connection.getInputStream());
+                BufferedReader bufferedReader = new BufferedReader(streamReader);
+                String response;
+                while ((response = bufferedReader.readLine()) != null) {
+                    stringBuilder.append(response).append("\n");
+                }
+                bufferedReader.close();
+                if ( Firsttime ) {
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("altijdthuisid", altijdthuisid);
+                    editor.apply();
+                }
+                Log.d("registratie aangemaakt:", stringBuilder.toString());
+            }
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK)
+            {
+                Log.d("registratie geupdated:", stringBuilder.toString());
+            }
+            else
+            {
+                Log.e("response not ok", connection.getResponseMessage() + connection.getResponseCode());
+            }
+        } catch (Exception exception){
+            Log.e("apigily fault", exception.toString());
+        } finally {
+            if (connection != null){
+                connection.disconnect();
+            }
+        }
     }
 
     /**
@@ -168,4 +200,52 @@ public class RegistrationIntentService extends IntentService {
         }
     }
     // [END subscribe_topics]
+
+    private String GetAltijdThuisID( String altijdthuis_url ) {
+
+        HttpURLConnection connection = null;
+
+        String result = null;
+        BufferedReader reader;
+        try {
+            URL url = new URL(altijdthuis_url);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.connect();
+            InputStream stream = connection.getInputStream();
+
+            reader = new BufferedReader( new InputStreamReader(stream));
+            StringBuilder buffer = new StringBuilder();
+            String line;
+            while ( (line = reader.readLine()) != null )
+            {
+                buffer.append(line);
+            }
+
+            JSONObject altijdthuis = new JSONObject( buffer.toString() );
+            result = altijdthuis.getString("AltijdthuisID");
+
+            //  Toast.makeText(getParent().getBaseContext(), "Geopened.", Toast.LENGTH_SHORT).show();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            result = "Error_URL";
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+            result = "Error_SERVER";
+            return result;
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }finally {
+            try {
+                assert connection != null;
+                connection.disconnect();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
 }

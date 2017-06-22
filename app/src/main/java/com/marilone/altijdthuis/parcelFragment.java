@@ -2,10 +2,10 @@ package com.marilone.altijdthuis;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
-import android.support.v4.app.ListFragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,18 +15,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
-
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.marilone.altijdthuis.packages.DeliveredPackages;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
@@ -47,8 +48,8 @@ public class parcelFragment extends Fragment {
 
     public MyparcelRecyclerViewAdapter mAdapter;
 
-    private JSONArray mPackages;
-    private DeliveredPackages mDeliveredPackages;
+    public JSONArray mPackages;
+    public DeliveredPackages mDeliveredPackages;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -105,7 +106,6 @@ public class parcelFragment extends Fragment {
         return view;
     }
 
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -140,7 +140,7 @@ public class parcelFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnListFragmentInteractionListener {
+    interface OnListFragmentInteractionListener {
 
         void onListFragmentInteraction(DeliveredPackages.PackageItem item);
     }
@@ -153,45 +153,79 @@ public class parcelFragment extends Fragment {
         String host = sharedPreferences.getString(QuickstartPreferences.ALTIJDTHUIS_HOST,null);
         int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT,8080);
 
-        RequestQueue queue = Volley.newRequestQueue(context);
-        if ( host == null )
-        {
-             Toast.makeText(context.getApplicationContext(), "Altijdthuis niet gevonden.", Toast.LENGTH_LONG).show();
-             return;
-        }
-
         String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis//GetDeliveredPackages.php";
-        //String url ="http://192.168.1.106:8080/altijdthuis//GetDeliveredPackages.php";
+
         Log.d("GetPackages:", "url: "+url);
 
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        try {
+        new GetDeliveredPackages().execute(url);
+    }
 
-                            JSONObject mResponse = new JSONObject(response);
-                            mPackages = (JSONArray) mResponse.get("response");
-                            mDeliveredPackages = new DeliveredPackages(mPackages);
-                            mAdapter.notifyDataSetChanged();
-                            swipeContainer.setRefreshing(false);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        Log.d("GetPackages:", "Response is: "+ response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(context.getApplicationContext(), "Altijdthuis is niet aanwezig.", Toast.LENGTH_LONG).show();
-                Log.d("GetPackages:", "Altijdthuis is niet aanwezig." + error.getMessage());
-                swipeContainer.setRefreshing(false);
-                // mTextView.setText("That didn't work!");
+    private class GetDeliveredPackages extends AsyncTask<String, String, String>
+    {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            HttpURLConnection connection=null;
+            BufferedReader reader=null;
+
+            try {
+                URL url = new URL(strings[0]);
+
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                InputStream stream = connection.getInputStream();
+
+                reader = new BufferedReader( new InputStreamReader(stream));
+                StringBuilder buffer = new StringBuilder();
+                String line;
+                while ( (line = reader.readLine()) != null )
+                {
+                    buffer.append(line);
+                }
+
+                return buffer.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
+            finally {
+                assert connection != null;
+                connection.disconnect();
+                if ( reader != null)
+                {
+                    try {
+                        reader.close();
+                    }
+                    catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String deliveredpackages) {
+            super.onPostExecute(deliveredpackages);
+            try {
+
+                if ( deliveredpackages != null ) {
+                    JSONObject mResponse = new JSONObject(deliveredpackages);
+                    mPackages = (JSONArray) mResponse.get("response");
+                    mDeliveredPackages = new DeliveredPackages(mPackages);
+                    mAdapter.notifyDataSetChanged();
+                    swipeContainer.setRefreshing(false);
+                }
+                else
+                {
+                   if ( getContext() != null ) {
+                       Toast.makeText(getContext(), "Altijdthuis is niet aanwezig.", Toast.LENGTH_LONG).show();
+                   }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

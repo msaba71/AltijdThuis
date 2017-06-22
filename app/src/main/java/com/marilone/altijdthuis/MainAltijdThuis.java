@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.nsd.NsdServiceInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -22,16 +22,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.marilone.altijdthuis.packages.DeliveredPackages.PackageItem;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
@@ -50,7 +51,7 @@ public class MainAltijdThuis extends AppCompatActivity
     private NsdHelper mNsdHelper;
     private NsdServiceInfo mServiceInfo;
 
-       private SwipeRefreshLayout swipeContainer;
+    private SwipeRefreshLayout swipeContainer;
 
 
        @Override
@@ -131,18 +132,17 @@ public class MainAltijdThuis extends AppCompatActivity
 
         if (id == R.id.nav_camera) {
             // Registering BroadcastReceiver
-            if ( mNsdHelper.getChosenServiceInfo() == null )
-            {
-                Toast.makeText(getApplicationContext(), "Altijd thuis niet gevonden.", Toast.LENGTH_LONG).show();
-                return false;
-            }
-            mServiceInfo = mNsdHelper.getChosenServiceInfo();
+            final Context context = getApplicationContext();
+            SharedPreferences sharedPreferences = getDefaultSharedPreferences(context);
+            String host = sharedPreferences.getString(QuickstartPreferences.ALTIJDTHUIS_HOST,null);
+            int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT,8080);
+
             if (checkPlayServices()) {
                 // Start IntentService to register this application with GCM.
                 Intent intent = new Intent(this, RegistrationIntentService.class);
-                if (mServiceInfo!=null) {
-                    intent.putExtra("Address", mServiceInfo.getHost().getHostAddress());
-                    intent.putExtra("Port", mServiceInfo.getPort());
+                if (host!=null) {
+                    intent.putExtra("Address", host);
+                    intent.putExtra("Port", port);
                 }
                 startService(intent);
             }
@@ -151,6 +151,7 @@ public class MainAltijdThuis extends AppCompatActivity
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        assert drawer != null;
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -191,48 +192,71 @@ public class MainAltijdThuis extends AppCompatActivity
     }
 
     public void onButtonAltijdThuisClick( View v) {
-        OpenAltijdThuis();
+
+        SharedPreferences sharedPreferences =
+                getDefaultSharedPreferences(this);
+        String host = sharedPreferences.getString(QuickstartPreferences.ALTIJDTHUIS_HOST,null);
+        int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT,8080);
+
+        String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis/OpenAltijdThuis.php";
+        new OpenAltijdThuis().execute(url);
     }
-
-    private boolean OpenAltijdThuis() {
-        // Instantiate the RequestQueue.T
-        boolean opened = false;
-        RequestQueue queue = Volley.newRequestQueue(this);
-        if ( mNsdHelper.getChosenServiceInfo() == null )
-        {
-            Toast.makeText(getApplicationContext(), "Altijd thuis niet gevonden.", Toast.LENGTH_LONG).show();
-            return opened;
-        }
-        mServiceInfo = mNsdHelper.getChosenServiceInfo();
-
-        String url ="http:/"+mServiceInfo.getHost()+":"+mServiceInfo.getPort()+"/altijdthuis//OpenAltijdThuis.php";
-        Log.d("Open:", "url: "+url);
-
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        Toast.makeText(getApplicationContext(), "Geopened.", Toast.LENGTH_SHORT).show();
-                        Log.d("Open:", "Response is: "+ response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(getApplicationContext(), "Openen werkt helaas niet.", Toast.LENGTH_LONG).show();
-                Log.d("Open:", "Openen werkt helaas niet");
-                // mTextView.setText("That didn't work!");
-            }
-        });
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
-        return opened;
-    }
-
 
        @Override
        public void onListFragmentInteraction(PackageItem item) {
+
+       }
+
+       private class OpenAltijdThuis extends AsyncTask<String, Void, String> {
+
+           @Override
+           protected String doInBackground(String... strings) {
+               HttpURLConnection connection = null;
+
+               String result;
+               BufferedReader reader;
+               try {
+                   URL url = new URL(strings[0]);
+                   connection = (HttpURLConnection) url.openConnection();
+                   connection.connect();
+                   InputStream stream = connection.getInputStream();
+
+                   reader = new BufferedReader( new InputStreamReader(stream));
+                   StringBuilder buffer = new StringBuilder();
+                   String line;
+                   while ( (line = reader.readLine()) != null )
+                   {
+                       buffer.append(line);
+                   }
+
+
+                 //  Toast.makeText(getParent().getBaseContext(), "Geopened.", Toast.LENGTH_SHORT).show();
+               } catch (MalformedURLException e) {
+                   e.printStackTrace();
+                   result = "Error_URL";
+                   return result;
+               } catch (IOException e) {
+                   e.printStackTrace();
+                   result = "Error_SERVER";
+                   return result;
+               } finally {
+                   assert connection != null;
+                   connection.disconnect();
+                   result = "SUCCES";
+               }
+
+               return result;
+           }
+
+           protected void onPostExecute(String result) {
+               //Print Toast or open dialog
+               if ( result == "SUCCES") {
+                Toast.makeText(getApplicationContext(), "Geopened.", Toast.LENGTH_SHORT).show();
+               }
+               if ( result == "Error_URL" || result == "Error_SERVER") {
+                   Toast.makeText(getApplicationContext(), "Altijdthuisbox niet bereikbaar.", Toast.LENGTH_SHORT).show();
+               }
+           }
 
        }
    }
