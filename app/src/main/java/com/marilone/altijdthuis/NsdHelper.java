@@ -18,8 +18,8 @@ import android.os.Handler;
 import android.os.Looper;
 
 class NsdHelper {
-    private Context mContext;
-    private NsdManager mNsdManager;
+    final private Context mContext;
+    final private NsdManager mNsdManager;
     private ResolveListener mResolveListener;
     private DiscoveryListener mDiscoveryListener;
     private RegistrationListener mRegistrationListener;

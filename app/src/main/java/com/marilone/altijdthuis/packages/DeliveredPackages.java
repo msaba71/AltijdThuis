@@ -2,8 +2,6 @@ package com.marilone.altijdthuis.packages;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,12 +18,12 @@ public class DeliveredPackages {
     /**
      * An array of sample (dummy) items.
      */
-    public static final List<PackageItem> ITEMS = new ArrayList<PackageItem>();
+    public static final List<PackageItem> ITEMS = new ArrayList<>();
 
     /**
      * A map of sample (dummy) items, by ID.
      */
-    public static final Map<String, PackageItem> ITEM_MAP = new HashMap<String, PackageItem>();
+    private static final Map<String, PackageItem> ITEM_MAP = new HashMap<>();
 
     private static final int COUNT = 25;
 

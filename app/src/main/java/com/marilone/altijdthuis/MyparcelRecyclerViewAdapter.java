@@ -18,12 +18,13 @@ import java.util.List;
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyparcelRecyclerViewAdapter extends RecyclerView.Adapter<MyparcelRecyclerViewAdapter.ViewHolder> {
+class MyparcelRecyclerViewAdapter extends RecyclerView.Adapter<MyparcelRecyclerViewAdapter.ViewHolder> {
 
     private final List<PackageItem> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyparcelRecyclerViewAdapter(List<PackageItem> items, OnListFragmentInteractionListener listener) {
+
+    MyparcelRecyclerViewAdapter(List<PackageItem> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -57,12 +58,12 @@ public class MyparcelRecyclerViewAdapter extends RecyclerView.Adapter<MyparcelRe
         return mValues.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public final View mView;
-        public final TextView mContentView;
-        public DeliveredPackages.PackageItem mItem;
+    class ViewHolder extends RecyclerView.ViewHolder {
+        final View mView;
+        final TextView mContentView;
+        DeliveredPackages.PackageItem mItem;
 
-        public ViewHolder(View view) {
+        ViewHolder(View view) {
             super(view);
             mView = view;
             mContentView = (TextView) view.findViewById(R.id.content);
@@ -73,7 +74,8 @@ public class MyparcelRecyclerViewAdapter extends RecyclerView.Adapter<MyparcelRe
             return super.toString() + " '" + mContentView.getText() + "'";
         }
     }
-    public void clear() {
+
+    void clear() {
         mValues.clear();
         notifyDataSetChanged();
     }

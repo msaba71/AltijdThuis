@@ -3,14 +3,11 @@ package com.marilone.altijdthuis;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.common.api.BooleanResult;
 import com.google.android.gms.gcm.GcmPubSub;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
@@ -126,7 +123,7 @@ public class RegistrationIntentService extends IntentService {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        String urlpath ="http://192.168.1.5:8889"+"/registratie";
+        String urlpath = Global.apigiltyURL + "/registratie";
         if (!Firsttime  ) urlpath += "/" + altijdthuisid;
 
         Log.d("Registreer api:", "url: "+urlpath);

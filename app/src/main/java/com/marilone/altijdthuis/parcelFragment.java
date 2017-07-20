@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
@@ -46,10 +45,7 @@ public class parcelFragment extends Fragment {
 
     private SwipeRefreshLayout swipeContainer;
 
-    public MyparcelRecyclerViewAdapter mAdapter;
-
-    public JSONArray mPackages;
-    public DeliveredPackages mDeliveredPackages;
+    private MyparcelRecyclerViewAdapter mAdapter;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -145,7 +141,7 @@ public class parcelFragment extends Fragment {
         void onListFragmentInteraction(DeliveredPackages.PackageItem item);
     }
 
-    public void RetrieveDeliveredPackages() {
+    private void RetrieveDeliveredPackages() {
 
         final Context context = getContext();
         SharedPreferences sharedPreferences =
@@ -213,8 +209,8 @@ public class parcelFragment extends Fragment {
 
                 if ( deliveredpackages != null ) {
                     JSONObject mResponse = new JSONObject(deliveredpackages);
-                    mPackages = (JSONArray) mResponse.get("response");
-                    mDeliveredPackages = new DeliveredPackages(mPackages);
+                    JSONArray mPackages = (JSONArray) mResponse.get("response");
+                    DeliveredPackages mDeliveredPackages = new DeliveredPackages(mPackages);
                     mAdapter.notifyDataSetChanged();
                     swipeContainer.setRefreshing(false);
                 }

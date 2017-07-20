@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.net.nsd.NsdServiceInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -49,9 +48,7 @@ public class MainAltijdThuis extends AppCompatActivity
     private BroadcastReceiver mRegistrationBroadcastReceiver;
     private boolean isReceiverRegistered;
 
-    // Zoek de raspberry
-    private NsdHelper mNsdHelper;
-    private NsdServiceInfo mServiceInfo;
+       private NsdServiceInfo mServiceInfo;
 
     private SwipeRefreshLayout swipeContainer;
 
@@ -62,7 +59,7 @@ public class MainAltijdThuis extends AppCompatActivity
         setContentView(R.layout.activity_main_altijd_thuis);
 
         // NSD
-           mNsdHelper = new NsdHelper(this, (FloatingActionButton) findViewById(R.id.fab));
+           NsdHelper mNsdHelper = new NsdHelper(this, (FloatingActionButton) findViewById(R.id.fab));
         mNsdHelper.initializeNsd();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

@@ -17,7 +17,6 @@
         app:layoutManager="LinearLayoutManager"
         tools:context="com.marilone.altijdthuis.parcelFragment"
         tools:listitem="@layout/fragment_parcel"
-        android:clickable="false"
-        android:elevation="@dimen/abc_dialog_fixed_height_minor" />
+        android:clickable="false" />
 
 </android.support.v4.widget.SwipeRefreshLayout>

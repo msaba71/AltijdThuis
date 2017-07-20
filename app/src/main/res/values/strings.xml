@@ -7,7 +7,6 @@
     <string name="action_settings">Instellingen</string>
     <string name="action_over">Over</string>
 
-    <string name="contentopenaltijdthuis">contentOpenAltijdThuis</string>
     <string name="title_activity_my_preferences">Settings</string>
 
     <!-- Strings related to Settings -->
@@ -23,10 +22,7 @@
 
     <string name="pref_title_email">Email</string>
 
-    <!-- Example settings for Data & Sync -->
-
-    <!-- Example settings for Notifications -->
-
     <string name="pref_ringtone_silent">Silent</string>
+    <string name="registrer">Registrer</string>
 
 </resources>
