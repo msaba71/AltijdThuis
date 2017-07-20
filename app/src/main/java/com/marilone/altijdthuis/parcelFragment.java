@@ -189,8 +189,9 @@ public class parcelFragment extends Fragment {
                 e.printStackTrace();
             }
             finally {
-                assert connection != null;
-                connection.disconnect();
+                if (connection != null) {
+                    connection.disconnect();
+                }
                 if ( reader != null)
                 {
                     try {

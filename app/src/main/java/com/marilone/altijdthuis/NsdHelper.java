@@ -1,40 +1,50 @@
 package com.marilone.altijdthuis;
 
-/**
- * Created by Marco on 10-6-2016.
- */
-
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.net.nsd.NsdServiceInfo;
 import android.net.nsd.NsdManager;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import static android.net.nsd.NsdManager.*;
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
+import static com.marilone.altijdthuis.R.color.colorOffline;
+import static com.marilone.altijdthuis.R.color.colorOnline;
 
-public class NsdHelper {
-    Context mContext;
-    NsdManager mNsdManager;
-    NsdManager.ResolveListener mResolveListener;
-    NsdManager.DiscoveryListener mDiscoveryListener;
-    NsdManager.RegistrationListener mRegistrationListener;
-    public static final String SERVICE_TYPE = "_http._tcp.";
-    public static final String TAG = "NSD";
-    public String mServiceName = "altijdthuis";
-    NsdServiceInfo mService;
-    boolean bFound = false;
+import android.os.Handler;
+import android.os.Looper;
 
-    public NsdHelper(Context context) {
+class NsdHelper {
+    private Context mContext;
+    private NsdManager mNsdManager;
+    private ResolveListener mResolveListener;
+    private DiscoveryListener mDiscoveryListener;
+    private RegistrationListener mRegistrationListener;
+    private static final String SERVICE_TYPE = "_http._tcp.";
+    private static final String TAG = "NSD";
+    private String mServiceName = "altijdthuis";
+    private NsdServiceInfo mService;
+    private boolean bFound = false;
+
+    private final FloatingActionButton mOopenbutton;
+
+    NsdHelper(Context context, final FloatingActionButton openbutton) {
         mContext = context;
+        mOopenbutton = openbutton;
         mNsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
     }
-    public void initializeNsd() {
+
+    void initializeNsd() {
         initializeResolveListener();
         discoverServices();
-        //mNsdManager.init(mContext.getMainLooper(), this);
+
     }
-    public void initializeDiscoveryListener() {
-        mDiscoveryListener = new NsdManager.DiscoveryListener() {
+
+    private void initializeDiscoveryListener() {
+        mDiscoveryListener = new DiscoveryListener() {
             @Override
             public void onDiscoveryStarted(String regType) {
                 Log.d(TAG, "Service discovery started");
@@ -56,6 +66,7 @@ public class NsdHelper {
                 if (mService == service) {
                     mService = null;
                 }
+                setButtonOffline();
             }
             @Override
             public void onDiscoveryStopped(String serviceType) {
@@ -71,8 +82,9 @@ public class NsdHelper {
             }
         };
     }
-    public void initializeResolveListener() {
-        mResolveListener = new NsdManager.ResolveListener() {
+
+    private void initializeResolveListener() {
+        mResolveListener = new ResolveListener() {
             @Override
             public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
                 Log.e(TAG, "Resolve failed" + errorCode);
@@ -86,12 +98,14 @@ public class NsdHelper {
                     SharedPreferences sharedPreferences = getDefaultSharedPreferences(mContext);
                     sharedPreferences.edit().putString(QuickstartPreferences.ALTIJDTHUIS_HOST, mService.getHost().toString()).apply();
                     sharedPreferences.edit().putInt(QuickstartPreferences.ALTIJDTHUIS_PORT, mService.getPort() ).apply();
+                    setButtonOnline();
                 }
             }
         };
     }
-    public void initializeRegistrationListener() {
-        mRegistrationListener = new NsdManager.RegistrationListener() {
+
+    private void initializeRegistrationListener() {
+        mRegistrationListener = new RegistrationListener() {
             @Override
             public void onServiceRegistered(NsdServiceInfo NsdServiceInfo) {
                 mServiceName = NsdServiceInfo.getServiceName();
@@ -111,7 +125,8 @@ public class NsdHelper {
             }
         };
     }
-    public void registerService(int port) {
+
+    private void registerService(int port) {
         tearDown();  // Cancel any previous registration request
         initializeRegistrationListener();
         NsdServiceInfo serviceInfo  = new NsdServiceInfo();
@@ -119,34 +134,52 @@ public class NsdHelper {
         serviceInfo.setServiceName(mServiceName);
         serviceInfo.setServiceType(SERVICE_TYPE);
         mNsdManager.registerService(
-                serviceInfo, NsdManager.PROTOCOL_DNS_SD, mRegistrationListener);
+                serviceInfo, PROTOCOL_DNS_SD, mRegistrationListener);
     }
-    public void discoverServices() {
+
+    private void discoverServices() {
         stopDiscovery();  // Cancel any existing discovery request
         initializeDiscoveryListener();
         mNsdManager.discoverServices(
-                SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+                SERVICE_TYPE, PROTOCOL_DNS_SD, mDiscoveryListener);
     }
-    public void stopDiscovery() {
+
+    private void stopDiscovery() {
         if (mDiscoveryListener != null) {
-            try {
-                mNsdManager.stopServiceDiscovery(mDiscoveryListener);
-            } finally {
-            }
+            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
             mDiscoveryListener = null;
         }
     }
-    public boolean isFound() {return bFound; }
-    public NsdServiceInfo getChosenServiceInfo() {
+
+    private NsdServiceInfo getChosenServiceInfo() {
         return mService;
     }
     public void tearDown() {
         if (mRegistrationListener != null) {
-            try {
-                mNsdManager.unregisterService(mRegistrationListener);
-            } finally {
-            }
+            mNsdManager.unregisterService(mRegistrationListener);
             mRegistrationListener = null;
         }
     }
+
+    private void setButtonOnline() {
+        Handler refresh = new Handler(Looper.getMainLooper());
+        refresh.post(new Runnable() {
+            @Override
+            public void run() {
+                mOopenbutton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(mContext, colorOnline)));
+            }
+        });
+    }
+
+    private void setButtonOffline() {
+        Handler refresh = new Handler(Looper.getMainLooper());
+        refresh.post(new Runnable() {
+            @Override
+            public void run() {
+                mOopenbutton.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(mContext, colorOffline)));
+            }
+        });
+    }
+
+
 }

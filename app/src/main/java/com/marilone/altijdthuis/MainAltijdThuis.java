@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.net.nsd.NsdServiceInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -60,7 +62,7 @@ public class MainAltijdThuis extends AppCompatActivity
         setContentView(R.layout.activity_main_altijd_thuis);
 
         // NSD
-        mNsdHelper = new NsdHelper(this);
+           mNsdHelper = new NsdHelper(this, (FloatingActionButton) findViewById(R.id.fab));
         mNsdHelper.initializeNsd();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -69,9 +71,7 @@ public class MainAltijdThuis extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        if (drawer != null) {
-            drawer.setDrawerListener(toggle);
-        }
+           if (drawer != null) drawer.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
@@ -87,7 +87,7 @@ public class MainAltijdThuis extends AppCompatActivity
                         .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
             }
         };
-    }
+       }
 
     @Override
     public void onBackPressed() {
@@ -240,8 +240,9 @@ public class MainAltijdThuis extends AppCompatActivity
                    result = "Error_SERVER";
                    return result;
                } finally {
-                   assert connection != null;
-                   connection.disconnect();
+                   if (connection != null) {
+                       connection.disconnect();
+                   }
                    result = "SUCCES";
                }
 
