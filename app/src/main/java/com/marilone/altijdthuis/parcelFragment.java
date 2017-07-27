@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -143,14 +145,12 @@ public class parcelFragment extends Fragment {
 
     private void RetrieveDeliveredPackages() {
 
-        final Context context = getContext();
-        SharedPreferences sharedPreferences =
-                getDefaultSharedPreferences(context);
-        String host = sharedPreferences.getString(QuickstartPreferences.ALTIJDTHUIS_HOST,null);
-        int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT,8080);
 
-        String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis//GetDeliveredPackages.php";
+        // String host = sharedPreferences.getString(QuickstartPreferences.ALTIJDTHUIS_HOST,null);
+        // int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT,8080);
 
+        //String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis//GetDeliveredPackages.php";
+        String url = Global.apigiltyURL + "/getontvangenpakketten";
         Log.d("GetPackages:", "url: "+url);
 
         new GetDeliveredPackages().execute(url);
@@ -168,23 +168,38 @@ public class parcelFragment extends Fragment {
                 URL url = new URL(strings[0]);
 
                 connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestMethod("POST");
 
-                InputStream stream = connection.getInputStream();
+                OutputStreamWriter streamWriter = new OutputStreamWriter(connection.getOutputStream());
+                JSONObject oRegistration = new JSONObject();
+                final Context context = getContext();
+                SharedPreferences sharedPreferences = getDefaultSharedPreferences(context);
 
-                reader = new BufferedReader( new InputStreamReader(stream));
+                String altijdthuisid = sharedPreferences.getString("altijdthuisid", null);
+                oRegistration.put("AltijdthuisID", altijdthuisid);
+
+                streamWriter.write(oRegistration.toString());
+                streamWriter.flush();
                 StringBuilder buffer = new StringBuilder();
-                String line;
-                while ( (line = reader.readLine()) != null )
-                {
-                    buffer.append(line);
-                }
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    InputStream stream = connection.getInputStream();
 
+                    reader = new BufferedReader(new InputStreamReader(stream));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        buffer.append(line);
+                    }
+                }
                 return buffer.toString();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            finally {
+            } catch (JSONException e) {
+                e.printStackTrace();
+            } finally {
                 if (connection != null) {
                     connection.disconnect();
                 }

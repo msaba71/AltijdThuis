@@ -30,7 +30,7 @@ public class DeliveredPackages {
 
     public DeliveredPackages(JSONArray mPackages)  {
         try {
-            for (int i = 1; i < mPackages.length(); i++) {
+            for (int i = 0; i < mPackages.length(); i++) {
                     addItem(createPackageItem( mPackages.getString(i),i) );
             }
         } catch (JSONException e) {
