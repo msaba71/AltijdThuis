@@ -29,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Objects;
 
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
@@ -222,7 +223,7 @@ public class parcelFragment extends Fragment {
             super.onPostExecute(deliveredpackages);
             try {
 
-                if (deliveredpackages != "" && deliveredpackages != null) {
+                if (!Objects.equals(deliveredpackages, "") && deliveredpackages != null) {
                     JSONObject mResponse = new JSONObject(deliveredpackages);
                     JSONArray mPackages = (JSONArray) mResponse.get("response");
                     DeliveredPackages mDeliveredPackages = new DeliveredPackages(mPackages);

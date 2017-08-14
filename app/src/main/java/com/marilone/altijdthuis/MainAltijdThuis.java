@@ -20,6 +20,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -358,10 +359,10 @@ public class MainAltijdThuis extends AppCompatActivity
 
            protected void onPostExecute(String result) {
                //Print Toast or open dialog
-               if ( result == "SUCCES") {
+               if (result.equals("SUCCES")) {
                 Toast.makeText(getApplicationContext(), "Geopened.", Toast.LENGTH_SHORT).show();
                }
-               if (result == "Error_URL" || result == "Error_SERVER") {
+               if (result.equals("Error_URL") || result.equals("Error_SERVER")) {
                    Toast.makeText(getApplicationContext(), "Altijdthuisbox niet bereikbaar.", Toast.LENGTH_SHORT).show();
                }
            }
@@ -405,7 +406,7 @@ public class MainAltijdThuis extends AppCompatActivity
 
        @Override
        public void onRequestPermissionsResult(int requestCode,
-                                              String permissions[], int[] grantResults) {
+                                              @NonNull String permissions[], @NonNull int[] grantResults) {
            switch (requestCode) {
                case MY_PERMISSIONS_REQUEST_LOCATION: {
                    // If request is cancelled, the result arrays are empty.
@@ -419,22 +420,15 @@ public class MainAltijdThuis extends AppCompatActivity
                                == PackageManager.PERMISSION_GRANTED) {
 
                            //Scan het netwerk!
-                           if (wifi.isWifiEnabled() == false) {
+                           if (!wifi.isWifiEnabled()) {
                                Toast.makeText(getApplicationContext(), "wifi is disabled. making it enabled", Toast.LENGTH_LONG).show();
                                wifi.setWifiEnabled(true);
                            }
                            wifi.startScan();
                        }
 
-                   } else {
-
-                       // permission denied, boo! Disable the
-                       // functionality that depends on this permission.
-
                    }
-                   return;
                }
-
            }
        }
 
@@ -462,10 +456,10 @@ public class MainAltijdThuis extends AppCompatActivity
                    }
                } catch (MalformedURLException e) {
                    e.printStackTrace();
-                   return result;
+                   return e.getMessage();
                } catch (IOException e) {
                    e.printStackTrace();
-                   return result;
+                   return e.getMessage();
                } finally {
                    try {
                        assert connection != null;
@@ -481,15 +475,16 @@ public class MainAltijdThuis extends AppCompatActivity
                        e.printStackTrace();
                    }
                }
+               result = "Connected";
                return result;
            }
 
            protected void onPostExecute(String result) {
                //Print Toast or open dialog
-               if (result == "SUCCES") {
+               if (result.equals("SUCCES")) {
                    Toast.makeText(getApplicationContext(), "Geopened.", Toast.LENGTH_SHORT).show();
                }
-               if ( result == "Error_URL" || result == "Error_SERVER") {
+               if (result.equals("Error_URL") || result.equals("Error_SERVER")) {
                    Toast.makeText(getApplicationContext(), "Altijdthuisbox niet bereikbaar.", Toast.LENGTH_SHORT).show();
                }
            }

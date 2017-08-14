@@ -88,14 +88,14 @@ public class WifiScanReceiver extends BroadcastReceiver {
 
                             boolean changeHappen = wifi.saveConfiguration();
 
-                            if (res != -1 && changeHappen) {
+                        /*    if (res != -1 && changeHappen) {
 
                                 // .connectedSsidName = networkSSID;
 
                             } else {
                                 // Log.d(TAG, "*** Change NOT happen");
                             }
-
+*/
                             wifi.setWifiEnabled(true);
 
                         }
