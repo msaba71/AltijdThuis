@@ -222,7 +222,7 @@ public class parcelFragment extends Fragment {
             super.onPostExecute(deliveredpackages);
             try {
 
-                if ( deliveredpackages != null ) {
+                if (deliveredpackages != "" && deliveredpackages != null) {
                     JSONObject mResponse = new JSONObject(deliveredpackages);
                     JSONArray mPackages = (JSONArray) mResponse.get("response");
                     DeliveredPackages mDeliveredPackages = new DeliveredPackages(mPackages);

@@ -24,5 +24,10 @@
 
     <string name="pref_ringtone_silent">Silent</string>
     <string name="registrer">Registrer</string>
+    <string name="setwifi">configureer wifi op de box</string>
+    <string name="accesspoint">AltijdthuisAP</string>
+    <string name="title_location_permission">Permissie voor wifi</string>
+    <string name="text_location_permission">Nodig om de altijdthuisbox te vinden in je netwerk</string>
+    <string name="ok">ok</string>
 
 </resources>

@@ -3,9 +3,13 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_camera"
+            android:id="@+id/nav_registreer"
             android:icon="@drawable/ic_menu_registreer"
             android:title="@string/registrer" />
+        <item
+            android:id="@+id/nav_setwifi"
+            android:icon="@drawable/ic_wifi_black_24dp"
+            android:title="@string/setwifi" />
     </group>
 
 
