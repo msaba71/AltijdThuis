@@ -22,6 +22,8 @@
 
     <string name="pref_title_email">Email</string>
 
+    <string name="pref_title_altijdthuisid">AltijdthuisID</string>
+
     <string name="pref_ringtone_silent">Silent</string>
     <string name="registrer">Registrer</string>
     <string name="setwifi">configureer wifi op de box</string>
@@ -29,5 +31,7 @@
     <string name="title_location_permission">Permissie voor wifi</string>
     <string name="text_location_permission">Nodig om de altijdthuisbox te vinden in je netwerk</string>
     <string name="ok">ok</string>
+    <string name="default_notification_channel_id">fcm_default_channe</string>
+    <string name="msg_token_fmt">Tokentje</string>
 
 </resources>

@@ -1,35 +1,11 @@
 {
   "project_info": {
     "project_number": "942213108953",
-    "project_id": "default-demo-app-b4773"
+    "firebase_url": "https://default-demo-app-b4773.firebaseio.com",
+    "project_id": "default-demo-app-b4773",
+    "storage_bucket": "default-demo-app-b4773.appspot.com"
   },
   "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:942213108953:android:f36173e948059ccb",
-        "android_client_info": {
-          "package_name": "gcm.play.android.samples.com.gcmquickstart"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDiCAXXoqSF-9Nh3sAqGeULEU1yqSE5nRQ"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 1
-        }
-      }
-    },
     {
       "client_info": {
         "mobilesdk_app_id": "1:942213108953:android:dd15b03660c7bc10",
@@ -37,7 +13,56 @@
           "package_name": "com.marilone.altijdthuis"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "942213108953-vmu75tc235b30a1qg2tf6t06002krf3q.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.marilone.altijdthuis",
+            "certificate_hash": "9049358db928558bcb7dfc6a92f1bd2adb02ba2f"
+          }
+        },
+        {
+          "client_id": "942213108953-dkckrsjmphsr8coo0ifadtm16fp94rko.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiCAXXoqSF-9Nh3sAqGeULEU1yqSE5nRQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "942213108953-dkckrsjmphsr8coo0ifadtm16fp94rko.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:942213108953:android:f36173e948059ccb",
+        "android_client_info": {
+          "package_name": "gcm.play.android.samples.com.gcmquickstart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "942213108953-dkckrsjmphsr8coo0ifadtm16fp94rko.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDiCAXXoqSF-9Nh3sAqGeULEU1yqSE5nRQ"
@@ -52,7 +77,7 @@
           "other_platform_oauth_client": []
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }

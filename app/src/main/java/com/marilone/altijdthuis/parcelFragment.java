@@ -3,8 +3,8 @@ package com.marilone.altijdthuis;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -57,15 +57,6 @@ public class parcelFragment extends Fragment {
     public parcelFragment() {
     }
 
-
-    public static parcelFragment newInstance(int columnCount) {
-        parcelFragment fragment = new parcelFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_COLUMN_COUNT, columnCount);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +72,7 @@ public class parcelFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_parcel_list, container, false);
         // Set the adapter
         Context context = view.getContext();
-        RecyclerView recyclerView =  (RecyclerView) view.findViewById(R.id.list);
+        RecyclerView recyclerView = view.findViewById(R.id.list);
         if (mColumnCount <= 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
         } else {
@@ -90,7 +81,7 @@ public class parcelFragment extends Fragment {
         mAdapter = new MyparcelRecyclerViewAdapter(DeliveredPackages.ITEMS, mListener);
         recyclerView.setAdapter(mAdapter);
 
-        swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
+        swipeContainer = view.findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
         swipeContainer.setOnRefreshListener(new OnRefreshListener() {
             @Override
@@ -151,7 +142,7 @@ public class parcelFragment extends Fragment {
         // int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT,8080);
 
         //String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis//GetDeliveredPackages.php";
-        String url = Global.apigiltyURL + "/getontvangenpakketten";
+        String url = Global.apigiltyURL + "getontvangenpakketten";
         Log.d("GetPackages:", "url: "+url);
 
         new GetDeliveredPackages().execute(url);
@@ -186,6 +177,9 @@ public class parcelFragment extends Fragment {
                 streamWriter.write(oRegistration.toString());
                 streamWriter.flush();
                 StringBuilder buffer = new StringBuilder();
+                Integer ja = connection.getResponseCode();
+                String hoi = connection.getResponseMessage();
+                String ok;
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     InputStream stream = connection.getInputStream();
 
@@ -223,18 +217,18 @@ public class parcelFragment extends Fragment {
             super.onPostExecute(deliveredpackages);
             try {
 
-                if (!Objects.equals(deliveredpackages, "") && deliveredpackages != null) {
-                    JSONObject mResponse = new JSONObject(deliveredpackages);
-                    JSONArray mPackages = (JSONArray) mResponse.get("response");
-                    DeliveredPackages mDeliveredPackages = new DeliveredPackages(mPackages);
-                    mAdapter.notifyDataSetChanged();
-                    swipeContainer.setRefreshing(false);
-                }
-                else
-                {
-                   if ( getContext() != null ) {
-                       Toast.makeText(getContext(), "Altijdthuis is niet aanwezig.", Toast.LENGTH_LONG).show();
-                   }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    if (!Objects.equals(deliveredpackages, "") && deliveredpackages != null) {
+                        JSONObject mResponse = new JSONObject(deliveredpackages);
+                        JSONArray mPackages = (JSONArray) mResponse.get("response");
+                        DeliveredPackages mDeliveredPackages = new DeliveredPackages(mPackages);
+                        mAdapter.notifyDataSetChanged();
+                        swipeContainer.setRefreshing(false);
+                    } else {
+                        if (getContext() != null) {
+                            Toast.makeText(getContext(), "Altijdthuis is niet aanwezig.", Toast.LENGTH_LONG).show();
+                        }
+                    }
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

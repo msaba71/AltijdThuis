@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * {@link RecyclerView.Adapter} that can display a {@link PackageItem} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
+ *
  */
 class MyparcelRecyclerViewAdapter extends RecyclerView.Adapter<MyparcelRecyclerViewAdapter.ViewHolder> {
 
@@ -66,7 +66,7 @@ class MyparcelRecyclerViewAdapter extends RecyclerView.Adapter<MyparcelRecyclerV
         ViewHolder(View view) {
             super(view);
             mView = view;
-            mContentView = (TextView) view.findViewById(R.id.content);
+            mContentView = view.findViewById(R.id.content);
         }
 
         @Override
@@ -77,12 +77,6 @@ class MyparcelRecyclerViewAdapter extends RecyclerView.Adapter<MyparcelRecyclerV
 
     void clear() {
         mValues.clear();
-        notifyDataSetChanged();
-    }
-
-    // Add a list of items
-    public void addAll(List<PackageItem> list) {
-        mValues.addAll(list);
         notifyDataSetChanged();
     }
 }

@@ -1,6 +1,5 @@
 package com.marilone.altijdthuis;
 
-import android.*;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
@@ -11,52 +10,44 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.DhcpInfo;
-import android.net.Network;
 import android.net.NetworkInfo;
-import android.net.nsd.NsdServiceInfo;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.InputType;
-import android.text.format.Formatter;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.marilone.altijdthuis.packages.DeliveredPackages.PackageItem;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigInteger;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.List;
 
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 
@@ -64,19 +55,12 @@ import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 public class MainAltijdThuis extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, parcelFragment.OnListFragmentInteractionListener
    {
-
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
     private static final String TAG = "MainAltijdThuis";
 
     private BroadcastReceiver mRegistrationBroadcastReceiver;
-    private boolean isReceiverRegistered;
-
-       private NsdServiceInfo mServiceInfo;
-
-    private SwipeRefreshLayout swipeContainer;
+       private NsdHelper mNsdHelper;
 
        WifiManager wifi;
-       String wifis[];
        WifiScanReceiver wifiReciever;
 
        @Override
@@ -85,37 +69,31 @@ public class MainAltijdThuis extends AppCompatActivity
         setContentView(R.layout.activity_main_altijd_thuis);
 
         // NSD
-           NsdHelper mNsdHelper = new NsdHelper(this, (FloatingActionButton) findViewById(R.id.fab));
+           mNsdHelper = new NsdHelper(this, (FloatingActionButton) findViewById(R.id.fab));
         mNsdHelper.initializeNsd();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+           Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+           DrawerLayout drawer = findViewById(R.id.drawer_layout);
            ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
            if (drawer != null) drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+           NavigationView navigationView = findViewById(R.id.nav_view);
         assert navigationView != null;
         navigationView.setNavigationItemSelectedListener(this);
 
-        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                SharedPreferences sharedPreferences =
-                        getDefaultSharedPreferences(context);
-                boolean sentToken = sharedPreferences
-                        .getBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false);
-            }
-        };
 
            wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
            wifiReciever = new WifiScanReceiver();
            registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
            if (ContextCompat.checkSelfPermission(this,
                    android.Manifest.permission.ACCESS_COARSE_LOCATION)
-                   != PackageManager.PERMISSION_GRANTED) {
+                   != PackageManager.PERMISSION_GRANTED ||
+                   ContextCompat.checkSelfPermission(this,
+                           Manifest.permission.CHANGE_WIFI_STATE)
+                           != PackageManager.PERMISSION_GRANTED) {
                askLocationPermission();
            } else {
                wifi.startScan();
@@ -124,7 +102,7 @@ public class MainAltijdThuis extends AppCompatActivity
        }
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         assert drawer != null;
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
@@ -157,31 +135,38 @@ public class MainAltijdThuis extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+       @NonNull
+       @SuppressWarnings("StatementWithEmptyBody")
+       @Override
+       public boolean onNavigationItemSelected(MenuItem item) {
+           // Handle navigation view item clicks here.
+           int id = item.getItemId();
 
-        if (id == R.id.nav_registreer) {
-            Intent intent = new Intent(this, MyPreferencesActivity.class);
-            startActivity(intent);
-            return true;
-        }
+           if (id == R.id.nav_registreer) {
+               Intent intent = new Intent(this, MyPreferencesActivity.class);
+               startActivity(intent);
+               return true;
+           }
 
-        if (id == R.id.nav_setwifi) {
-            if (!wifiReciever.isFound()) {
-                Toast.makeText(getApplicationContext(), "Altijdthuisbox is waarschijnlijk al ingesteld.", Toast.LENGTH_SHORT).show();
-            } else {
-                SendWifiConfiguration();
-
-            }
-        }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        assert drawer != null;
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
+           if (id == R.id.nav_setwifi) {
+               SendWifiConfiguration();
+               if (!wifiReciever.isFound()) {
+                   String message;
+                   if (mNsdHelper.isFound()) {
+                       message = "Altijdthuisbox is waarschijnlijk al ingesteld.";
+                   } else {
+                       message = "Altijdthuisbox staat uit of is uit wifi bereik.";
+                   }
+                   Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+               } else {
+                   SendWifiConfiguration();
+               }
+           }
+           DrawerLayout drawer = findViewById(R.id.drawer_layout);
+           assert drawer != null;
+           drawer.closeDrawer(GravityCompat.START);
+           return true;
+       }
 
        private void SendWifiConfiguration() {
 
@@ -205,16 +190,24 @@ public class MainAltijdThuis extends AppCompatActivity
                    password[0] = editText.getText().toString();
                    wifiConfiguration.SSID = "\"" + getString(R.string.accesspoint) + "\"";
                    wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+
                    final int res = wifi.addNetwork(wifiConfiguration);
-                   boolean b = wifi.enableNetwork(res, true);
+                   if (res != -1) {
+                       Log.d(TAG, "geen resource");
+                   } else {
+                       Log.d(TAG, "wel een resource");
+                   }
+
+                   Log.d(TAG, "AddedNetwork:");
+                   wifi.enableNetwork(res, true);
                    wifi.setWifiEnabled(true);
 
                    boolean changeHappen = wifi.saveConfiguration();
 
                    if (res != -1 && changeHappen) {
-                       // .connectedSsidName = networkSSID;
+                       Log.d(TAG, "*** Change happenned");
                    } else {
-                       // Log.d(TAG, "*** Change NOT happen");
+                       Log.d(TAG, "*** Change NOT happen");
                    }
                    wifi.setWifiEnabled(true);
                    // Verstuur
@@ -231,6 +224,7 @@ public class MainAltijdThuis extends AppCompatActivity
 
                                new SetWifiAP().execute("192.168.4.1", SSID, editText.getText().toString(), netid);
                            } catch (Exception e) {
+                               Log.d(TAG, "*** updaten wifi settings niet gelukt");
                            }
                        }
                    };
@@ -252,7 +246,6 @@ public class MainAltijdThuis extends AppCompatActivity
        @Override
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
-        isReceiverRegistered = false;
            unregisterReceiver(wifiReciever);
         super.onPause();
     }
@@ -262,42 +255,15 @@ public class MainAltijdThuis extends AppCompatActivity
            super.onResume();
        }
 
-    private void registerReceiver(){
-        if(!isReceiverRegistered) {
-            LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                    new IntentFilter(QuickstartPreferences.REGISTRATION_COMPLETE));
-            isReceiverRegistered = true;
-        }
-    }
-    /**
-     * Check the device to make sure it has the Google Play Services APK. If
-     * it doesn't, display a dialog that allows users to download the APK from
-     * the Google Play Store or enable it in the device's system settings.
-     */
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
-                        .show();
-            } else {
-                Log.i(TAG, "This device is not supported.");
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public void onButtonAltijdThuisClick( View v) {
+       public void onButtonAltijdThuisClick(View v) {
 
         SharedPreferences sharedPreferences =
                 getDefaultSharedPreferences(this);
         String host = sharedPreferences.getString(QuickstartPreferences.ALTIJDTHUIS_HOST,null);
         int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT,8080);
 
-        String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis/OpenAltijdThuis.php";
+           //String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis/OpenAltijdThuis.php";
+           String url = "http:/" + host + ":" + String.valueOf(port) + "/open";
         new OpenAltijdThuis().execute(url);
     }
 
@@ -371,10 +337,12 @@ public class MainAltijdThuis extends AppCompatActivity
 
        public static final int MY_PERMISSIONS_REQUEST_LOCATION = 99;
 
-       public boolean askLocationPermission() {
+       public void askLocationPermission() {
            // Should we show an explanation?
            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                   android.Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                   android.Manifest.permission.ACCESS_COARSE_LOCATION) ||
+                   ActivityCompat.shouldShowRequestPermissionRationale(this,
+                           Manifest.permission.CHANGE_WIFI_STATE)) {
 
                // Show an explanation to the user *asynchronously* -- don't block
                // this thread waiting for the user's response! After the user
@@ -387,7 +355,8 @@ public class MainAltijdThuis extends AppCompatActivity
                            public void onClick(DialogInterface dialogInterface, int i) {
                                //Prompt the user once explanation has been shown
                                ActivityCompat.requestPermissions(MainAltijdThuis.this,
-                                       new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
+                                       new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                                               android.Manifest.permission.CHANGE_WIFI_STATE},
                                        MY_PERMISSIONS_REQUEST_LOCATION);
                            }
                        })
@@ -401,7 +370,6 @@ public class MainAltijdThuis extends AppCompatActivity
                        new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION},
                        MY_PERMISSIONS_REQUEST_LOCATION);
            }
-           return false;
        }
 
        @Override
@@ -426,7 +394,6 @@ public class MainAltijdThuis extends AppCompatActivity
                            }
                            wifi.startScan();
                        }
-
                    }
                }
            }
@@ -438,10 +405,10 @@ public class MainAltijdThuis extends AppCompatActivity
            protected String doInBackground(String... strings) {
                HttpURLConnection connection = null;
 
-               String result = null;
+               String result;
                BufferedReader reader;
                try {
-                   URL url = new URL("http://" + strings[0] + "/wifisave?s=" + strings[1] + "&p=" + strings[2]);
+                   URL url = new URL("http://" + strings[0] + "/setwifi?ssid=" + strings[1] + "&pass=" + strings[2]);
 
                    Log.d("URL AP", url.toString());
                    connection = (HttpURLConnection) url.openConnection();

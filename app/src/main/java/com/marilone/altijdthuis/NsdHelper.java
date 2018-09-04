@@ -43,6 +43,10 @@ class NsdHelper {
 
     }
 
+    public boolean isFound() {
+        return bFound;
+    }
+
     private void initializeDiscoveryListener() {
         mDiscoveryListener = new DiscoveryListener() {
             @Override
@@ -99,42 +103,10 @@ class NsdHelper {
                     sharedPreferences.edit().putString(QuickstartPreferences.ALTIJDTHUIS_HOST, mService.getHost().toString()).apply();
                     sharedPreferences.edit().putInt(QuickstartPreferences.ALTIJDTHUIS_PORT, mService.getPort() ).apply();
                     setButtonOnline();
+                    bFound = true;
                 }
             }
         };
-    }
-
-    private void initializeRegistrationListener() {
-        mRegistrationListener = new RegistrationListener() {
-            @Override
-            public void onServiceRegistered(NsdServiceInfo NsdServiceInfo) {
-                mServiceName = NsdServiceInfo.getServiceName();
-                Log.d(TAG, "Service registered: " + mServiceName);
-            }
-            @Override
-            public void onRegistrationFailed(NsdServiceInfo arg0, int arg1) {
-                Log.d(TAG, "Service registration failed: " + arg1);
-            }
-            @Override
-            public void onServiceUnregistered(NsdServiceInfo arg0) {
-                Log.d(TAG, "Service unregistered: " + arg0.getServiceName());
-            }
-            @Override
-            public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                Log.d(TAG, "Service unregistration failed: " + errorCode);
-            }
-        };
-    }
-
-    private void registerService(int port) {
-        tearDown();  // Cancel any previous registration request
-        initializeRegistrationListener();
-        NsdServiceInfo serviceInfo  = new NsdServiceInfo();
-        serviceInfo.setPort(port);
-        serviceInfo.setServiceName(mServiceName);
-        serviceInfo.setServiceType(SERVICE_TYPE);
-        mNsdManager.registerService(
-                serviceInfo, PROTOCOL_DNS_SD, mRegistrationListener);
     }
 
     private void discoverServices() {
@@ -151,9 +123,6 @@ class NsdHelper {
         }
     }
 
-    private NsdServiceInfo getChosenServiceInfo() {
-        return mService;
-    }
     public void tearDown() {
         if (mRegistrationListener != null) {
             mNsdManager.unregisterService(mRegistrationListener);
