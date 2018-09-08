@@ -13,9 +13,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-//import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-//import com.firebase.jobdispatcher.GooglePlayDriver;
-//import com.firebase.jobdispatcher.Job;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -30,7 +27,10 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
+
+//import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+//import com.firebase.jobdispatcher.GooglePlayDriver;
+//import com.firebase.jobdispatcher.Job;
 
 public class MyFirebaseMsgService extends FirebaseMessagingService {
     private static final String TAG = "MyFirebaseMsgService";
@@ -56,8 +56,8 @@ public class MyFirebaseMsgService extends FirebaseMessagingService {
         // TODO(developer): Handle FCM messages here.
         // Not getting messages here? See why this may be: https://goo.gl/39bRNJ
         Log.d(TAG, "From: " + remoteMessage.getFrom());
-        Map<String, String> ja = remoteMessage.getData();
-        sendNotification("Hoi");
+        // Map<String, String> ja = remoteMessage.getData();
+        sendNotification(remoteMessage.getData().toString());
 
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {

@@ -3,19 +3,21 @@ package com.marilone.altijdthuis;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
-import android.net.nsd.NsdServiceInfo;
 import android.net.nsd.NsdManager;
+import android.net.nsd.NsdServiceInfo;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
-import static android.net.nsd.NsdManager.*;
+import static android.net.nsd.NsdManager.DiscoveryListener;
+import static android.net.nsd.NsdManager.PROTOCOL_DNS_SD;
+import static android.net.nsd.NsdManager.RegistrationListener;
+import static android.net.nsd.NsdManager.ResolveListener;
 import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 import static com.marilone.altijdthuis.R.color.colorOffline;
 import static com.marilone.altijdthuis.R.color.colorOnline;
-
-import android.os.Handler;
-import android.os.Looper;
 
 class NsdHelper {
     final private Context mContext;
@@ -25,7 +27,7 @@ class NsdHelper {
     private RegistrationListener mRegistrationListener;
     private static final String SERVICE_TYPE = "_http._tcp.";
     private static final String TAG = "NSD";
-    private String mServiceName = "altijdthuis";
+    final private String mServiceName = "altijdthuis";
     private NsdServiceInfo mService;
     private boolean bFound = false;
 

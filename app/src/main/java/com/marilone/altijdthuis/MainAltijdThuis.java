@@ -2,7 +2,6 @@ package com.marilone.altijdthuis;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,7 +19,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -56,8 +54,8 @@ public class MainAltijdThuis extends AppCompatActivity
        //   private BroadcastReceiver mRegistrationBroadcastReceiver;
        private NsdHelper mNsdHelper;
 
-       WifiManager wifi;
-       WifiScanReceiver wifiReciever;
+       private WifiManager wifi;
+       private WifiScanReceiver wifiReciever;
 
        @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -278,7 +276,7 @@ public class MainAltijdThuis extends AppCompatActivity
 
        }
 
-       public static boolean isConnected(Context context) {
+       private static boolean isConnected(Context context) {
            ConnectivityManager connectivityManager = (ConnectivityManager)
                    context.getSystemService(Context.CONNECTIVITY_SERVICE);
            NetworkInfo networkInfo = null;

@@ -10,10 +10,10 @@ import android.util.Log;
 import java.util.List;
 
 public class WifiScanReceiver extends BroadcastReceiver {
-    WifiManager wifi;
-    String wifis[];
-    List<ScanResult> wifiScanList;
-    boolean AccesspointFound;
+    private WifiManager wifi;
+    private String wifis[];
+    private List<ScanResult> wifiScanList;
+    private boolean AccesspointFound;
 
     public void onReceive(Context c, Intent intent) {
         wifi = (WifiManager) c.getApplicationContext().getSystemService(Context.WIFI_SERVICE);

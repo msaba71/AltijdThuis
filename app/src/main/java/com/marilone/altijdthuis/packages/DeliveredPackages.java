@@ -2,6 +2,7 @@ package com.marilone.altijdthuis.packages;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,9 +60,9 @@ public class DeliveredPackages {
      * A dummy item representing a piece of content.
      */
     public static class PackageItem {
-        public final String id;
+        private final String id;
         public final String content;
-        public final String details;
+        private final String details;
 
         public PackageItem(String id, String content, String details) {
             this.id = id;
