@@ -33,5 +33,6 @@
     <string name="ok">ok</string>
     <string name="default_notification_channel_id">fcm_default_channe</string>
     <string name="msg_token_fmt">Tokentje</string>
+    <string name="updatealtijdthuisbox">Update box software</string>
 
 </resources>

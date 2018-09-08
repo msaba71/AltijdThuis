@@ -4,13 +4,16 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_registreer"
-            android:icon="@drawable/ic_menu_registreer"
+            android:icon="@drawable/ic_wifi_black_24dp"
             android:title="@string/registrer" />
         <item
             android:id="@+id/nav_setwifi"
             android:icon="@drawable/ic_wifi_black_24dp"
             android:title="@string/setwifi" />
+        <item
+            android:id="@+id/nav_updatealtijdthuisbox"
+            android:icon="@drawable/ic_black_white_box"
+            android:title="@string/updatealtijdthuisbox" />
     </group>
-
 
 </menu>

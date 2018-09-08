@@ -35,10 +35,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.marilone.altijdthuis.packages.DeliveredPackages.PackageItem;
 
 import java.io.BufferedReader;
@@ -57,7 +53,7 @@ public class MainAltijdThuis extends AppCompatActivity
    {
     private static final String TAG = "MainAltijdThuis";
 
-    private BroadcastReceiver mRegistrationBroadcastReceiver;
+       //   private BroadcastReceiver mRegistrationBroadcastReceiver;
        private NsdHelper mNsdHelper;
 
        WifiManager wifi;
@@ -162,6 +158,16 @@ public class MainAltijdThuis extends AppCompatActivity
                    SendWifiConfiguration();
                }
            }
+
+           if (id == R.id.nav_updatealtijdthuisbox) {
+               SharedPreferences sharedPreferences =
+                       getDefaultSharedPreferences(this);
+               String host = sharedPreferences.getString(QuickstartPreferences.ALTIJDTHUIS_HOST, null);
+               int port = sharedPreferences.getInt(QuickstartPreferences.ALTIJDTHUIS_PORT, 8080);
+
+               String url = "http:/" + host + ":" + String.valueOf(port) + "/update";
+               new BrowseAltijdThuis().execute(url, "Geupdate");
+           }
            DrawerLayout drawer = findViewById(R.id.drawer_layout);
            assert drawer != null;
            drawer.closeDrawer(GravityCompat.START);
@@ -245,7 +251,7 @@ public class MainAltijdThuis extends AppCompatActivity
 
        @Override
     protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+           //   LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
            unregisterReceiver(wifiReciever);
         super.onPause();
     }
@@ -264,7 +270,7 @@ public class MainAltijdThuis extends AppCompatActivity
 
            //String url ="http:/"+host+":"+String.valueOf(port)+"/altijdthuis/OpenAltijdThuis.php";
            String url = "http:/" + host + ":" + String.valueOf(port) + "/open";
-        new OpenAltijdThuis().execute(url);
+           new BrowseAltijdThuis().execute(url, "Geopend");
     }
 
        @Override
@@ -283,16 +289,19 @@ public class MainAltijdThuis extends AppCompatActivity
            return networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED;
        }
 
-       private class OpenAltijdThuis extends AsyncTask<String, Void, String> {
+       private class BrowseAltijdThuis extends AsyncTask<String, Void, String> {
 
            @Override
            protected String doInBackground(String... strings) {
                HttpURLConnection connection = null;
 
                String result;
+               String SuccessMessage = "";
                BufferedReader reader;
                try {
                    URL url = new URL(strings[0]);
+                   SuccessMessage = strings[1];
+
                    connection = (HttpURLConnection) url.openConnection();
                    connection.connect();
                    InputStream stream = connection.getInputStream();
@@ -317,7 +326,7 @@ public class MainAltijdThuis extends AppCompatActivity
                    if (connection != null) {
                        connection.disconnect();
                    }
-                   result = "SUCCES";
+                   result = SuccessMessage;
                }
 
                return result;
