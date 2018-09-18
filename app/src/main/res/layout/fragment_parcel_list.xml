@@ -1,21 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.SwipeRefreshLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/swipeContainer"
+<?xml version="1.0" encoding="utf-8"?><!-- A RecyclerView with some commonly used attributes -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/list"
-        android:name="com.marilone.altijdthuis.parcelFragment"
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/swipeContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:clickable="false"
-        tools:context="com.marilone.altijdthuis.parcelFragment"
-        tools:listitem="@layout/fragment_parcel" />
+        android:layout_height="match_parent">
 
-</android.support.v4.widget.SwipeRefreshLayout>
+        <android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/recycler_view_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/background_light"
+            android:paddingBottom="@dimen/cardview_default_elevation"
+            android:scrollIndicators="none" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:background="?android:attr/listDivider" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+</RelativeLayout>

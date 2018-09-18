@@ -49,7 +49,7 @@ import static android.preference.PreferenceManager.getDefaultSharedPreferences;
 public class MainAltijdThuis extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, parcelFragment.OnListFragmentInteractionListener
    {
-    private static final String TAG = "MainAltijdThuis";
+       private static final String TAG = "MainAltijdThuis";
 
        //   private BroadcastReceiver mRegistrationBroadcastReceiver;
        private NsdHelper mNsdHelper;
@@ -58,7 +58,7 @@ public class MainAltijdThuis extends AppCompatActivity
        private WifiScanReceiver wifiReciever;
 
        @Override
-    protected void onCreate(Bundle savedInstanceState) {
+       protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_altijd_thuis);
 
@@ -78,7 +78,6 @@ public class MainAltijdThuis extends AppCompatActivity
         assert navigationView != null;
         navigationView.setNavigationItemSelectedListener(this);
 
-
            wifi = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
            wifiReciever = new WifiScanReceiver();
            registerReceiver(wifiReciever, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -92,8 +91,8 @@ public class MainAltijdThuis extends AppCompatActivity
            } else {
                wifi.startScan();
            }
-
        }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -129,10 +128,9 @@ public class MainAltijdThuis extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-       @NonNull
        @SuppressWarnings("StatementWithEmptyBody")
        @Override
-       public boolean onNavigationItemSelected(MenuItem item) {
+       public boolean onNavigationItemSelected(@NonNull MenuItem item) {
            // Handle navigation view item clicks here.
            int id = item.getItemId();
 
@@ -291,14 +289,14 @@ public class MainAltijdThuis extends AppCompatActivity
 
            @Override
            protected String doInBackground(String... strings) {
+               if (android.os.Debug.isDebuggerConnected())
+                   android.os.Debug.waitForDebugger();
                HttpURLConnection connection = null;
 
                String result;
-               String SuccessMessage = "";
                BufferedReader reader;
                try {
                    URL url = new URL(strings[0]);
-                   SuccessMessage = strings[1];
 
                    connection = (HttpURLConnection) url.openConnection();
                    connection.connect();
@@ -311,7 +309,7 @@ public class MainAltijdThuis extends AppCompatActivity
                    {
                        buffer.append(line);
                    }
-                 //  Toast.makeText(getParent().getBaseContext(), "Geopened.", Toast.LENGTH_SHORT).show();
+                   result = buffer.toString();
                } catch (MalformedURLException e) {
                    e.printStackTrace();
                    result = "Error_URL";
@@ -324,19 +322,16 @@ public class MainAltijdThuis extends AppCompatActivity
                    if (connection != null) {
                        connection.disconnect();
                    }
-                   result = SuccessMessage;
                }
-
                return result;
            }
 
            protected void onPostExecute(String result) {
                //Print Toast or open dialog
-               if (result.equals("SUCCES")) {
-                Toast.makeText(getApplicationContext(), "Geopened.", Toast.LENGTH_SHORT).show();
-               }
                if (result.equals("Error_URL") || result.equals("Error_SERVER")) {
                    Toast.makeText(getApplicationContext(), "Altijdthuisbox niet bereikbaar.", Toast.LENGTH_SHORT).show();
+               } else {
+                   Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
                }
            }
 
@@ -425,12 +420,10 @@ public class MainAltijdThuis extends AppCompatActivity
                    reader = new BufferedReader(new InputStreamReader(stream));
                    StringBuilder buffer = new StringBuilder();
                    String line;
+
                    while ((line = reader.readLine()) != null) {
                        buffer.append(line);
                    }
-               } catch (MalformedURLException e) {
-                   e.printStackTrace();
-                   return e.getMessage();
                } catch (IOException e) {
                    e.printStackTrace();
                    return e.getMessage();
@@ -462,6 +455,5 @@ public class MainAltijdThuis extends AppCompatActivity
                    Toast.makeText(getApplicationContext(), "Altijdthuisbox niet bereikbaar.", Toast.LENGTH_SHORT).show();
                }
            }
-
        }
    }

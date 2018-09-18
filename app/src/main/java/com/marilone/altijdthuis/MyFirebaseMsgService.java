@@ -147,6 +147,7 @@ public class MyFirebaseMsgService extends FirebaseMessagingService {
         String urlpath = Global.apigiltyURL + "registratie";
         if (!Firsttime  ) urlpath += "/" + altijdthuisid;
 
+
         Log.d("Registreer api:", "url: "+urlpath);
 
         // prepare the Request
@@ -154,9 +155,13 @@ public class MyFirebaseMsgService extends FirebaseMessagingService {
         try {
             URL url=new URL(urlpath);
             connection = (HttpURLConnection) url.openConnection();
-            // Bestaande registraties overschrijven.
 
-            connection.setRequestMethod("POST");
+            // Bestaande registraties overschrijven.
+            if (Firsttime) {
+                connection.setRequestMethod("POST");
+            } else {
+                connection.setRequestMethod("PUT");
+            }
             connection.setDoOutput(true);
             connection.setDoInput(true);
             connection.setRequestProperty("Content-Type", "application/json");

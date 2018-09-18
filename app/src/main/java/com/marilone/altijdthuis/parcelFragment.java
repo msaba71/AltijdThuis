@@ -2,15 +2,22 @@ package com.marilone.altijdthuis;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v4.widget.SwipeRefreshLayout.OnRefreshListener;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,6 +58,9 @@ public class parcelFragment extends Fragment {
 
     private MyparcelRecyclerViewAdapter mAdapter;
 
+    private RecyclerView recyclerView;
+    private Paint p = new Paint();
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -65,6 +75,7 @@ public class parcelFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
+
     }
 
     @Override
@@ -73,7 +84,8 @@ public class parcelFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_parcel_list, container, false);
         // Set the adapter
         Context context = view.getContext();
-        RecyclerView recyclerView = view.findViewById(R.id.list);
+        recyclerView = view.findViewById(R.id.recycler_view_list);
+        recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
         if (mColumnCount <= 1) {
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
         } else {
@@ -94,6 +106,49 @@ public class parcelFragment extends Fragment {
                 RetrieveDeliveredPackages();
             }
         });
+
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+
+                if (direction == ItemTouchHelper.LEFT) {
+                    mAdapter.removeItem(position);
+                } else {
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+
+                Bitmap icon;
+                if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+
+                    View itemView = viewHolder.itemView;
+                    float height = (float) itemView.getBottom() - (float) itemView.getTop();
+                    float width = height / 3;
+
+                    if (dX < 0) {
+                        p.setColor(Color.parseColor("#D32F2F"));
+                        RectF background = new RectF((float) itemView.getRight() + dX, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom());
+                        c.drawRect(background, p);
+                        icon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_delete);
+                        RectF icon_dest = new RectF((float) itemView.getRight() - 2 * width, (float) itemView.getTop() + width, (float) itemView.getRight() - width, (float) itemView.getBottom() - width);
+                        c.drawBitmap(icon, null, icon_dest, p);
+                    }
+                }
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
         return view;
     }
 
@@ -188,9 +243,7 @@ public class parcelFragment extends Fragment {
                     }
                 }
                 return buffer.toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
+            } catch (IOException | JSONException e) {
                 e.printStackTrace();
             } finally {
                 if (connection != null) {
@@ -206,7 +259,6 @@ public class parcelFragment extends Fragment {
                     }
                 }
             }
-
             return null;
         }
 
@@ -215,17 +267,15 @@ public class parcelFragment extends Fragment {
             super.onPostExecute(deliveredpackages);
             try {
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    if (!Objects.equals(deliveredpackages, "") && deliveredpackages != null) {
-                        JSONObject mResponse = new JSONObject(deliveredpackages);
-                        JSONArray mPackages = (JSONArray) mResponse.get("response");
-                        DeliveredPackages mDeliveredPackages = new DeliveredPackages(mPackages);
-                        mAdapter.notifyDataSetChanged();
-                        swipeContainer.setRefreshing(false);
-                    } else {
-                        if (getContext() != null) {
-                            Toast.makeText(getContext(), "Altijdthuis is niet aanwezig.", Toast.LENGTH_LONG).show();
-                        }
+                if (!Objects.equals(deliveredpackages, "") && deliveredpackages != null) {
+                    JSONObject mResponse = new JSONObject(deliveredpackages);
+                    JSONArray mPackages = (JSONArray) mResponse.get("response");
+                    DeliveredPackages mDeliveredPackages = new DeliveredPackages(mPackages);
+                    mAdapter.notifyDataSetChanged();
+                    swipeContainer.setRefreshing(false);
+                } else {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Altijdthuis is niet aanwezig.", Toast.LENGTH_LONG).show();
                     }
                 }
             } catch (JSONException e) {

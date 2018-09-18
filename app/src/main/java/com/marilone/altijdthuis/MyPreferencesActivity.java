@@ -14,12 +14,12 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.annotation.NonNull;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
+import android.support.annotation.NonNull;
+import android.support.v4.app.NavUtils;
+import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -289,7 +289,11 @@ public class MyPreferencesActivity extends AppCompatPreferenceActivity {
                                 connection = (HttpURLConnection) url.openConnection();
                                 // Bestaande registraties overschrijven.
 
-                                connection.setRequestMethod("POST");
+                                if (Firsttime) {
+                                    connection.setRequestMethod("POST");
+                                } else {
+                                    connection.setRequestMethod("PUT");
+                                }
                                 connection.setDoOutput(true);
                                 connection.setDoInput(true);
                                 connection.setRequestProperty("Content-Type", "application/json");

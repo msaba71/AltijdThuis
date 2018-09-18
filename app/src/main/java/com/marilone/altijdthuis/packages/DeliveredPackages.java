@@ -2,6 +2,7 @@ package com.marilone.altijdthuis.packages;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,8 +12,6 @@ import java.util.Map;
 /**
  * Helper class for providing sample content for user interfaces created by
  * Android template wizards.
- * <p/>
- * TODO: Replace all uses of this class before publishing your app.
  */
 public class DeliveredPackages {
 
@@ -26,13 +25,12 @@ public class DeliveredPackages {
      */
     private static final Map<String, PackageItem> ITEM_MAP = new HashMap<>();
 
-    private static final int COUNT = 25;
-
-
     public DeliveredPackages(JSONArray mPackages)  {
         try {
             for (int i = 0; i < mPackages.length(); i++) {
-                    addItem(createPackageItem( mPackages.getString(i),i) );
+                JSONObject oPackage = mPackages.getJSONObject(i);
+                int ID = (int) oPackage.get("ID");
+                addItem(createPackageItem(oPackage.getString("TEKST"), ID));
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -64,10 +62,14 @@ public class DeliveredPackages {
         public final String content;
         private final String details;
 
-        public PackageItem(String id, String content, String details) {
+        PackageItem(String id, String content, String details) {
             this.id = id;
             this.content = content;
             this.details = details;
+        }
+
+        public String getId() {
+            return id;
         }
 
         @Override

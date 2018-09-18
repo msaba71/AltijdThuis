@@ -22,4 +22,12 @@
         app:headerLayout="@layout/nav_header_main_altijd_thuis"
         app:menu="@menu/activity_main_altijd_thuis_drawer" />
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:clipToPadding="false"
+        android:overScrollMode="never" />
+
 </android.support.v4.widget.DrawerLayout>
